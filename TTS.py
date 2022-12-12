@@ -1,1 +1,1 @@
-print("TTS is working")
+print("Text to Speech is working.")

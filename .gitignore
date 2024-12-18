@@ -1,0 +1,7 @@
+.idea
+src
+dest
+__pycache__
+source/
+destination/
+

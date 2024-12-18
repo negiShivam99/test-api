@@ -1,0 +1,54 @@
+# This workflow deploys the DlH MART FULL DEPLOYMENT DAB
+# within all three targets: dev, uat and prod.
+name: "PYTHON UTILITY PUSH DEPLOY"
+
+# Ensure that only one job or workflow using the same concurrency group
+# runs at a time. This prevents multiple deployments from overlapping.
+concurrency: 1
+
+# Workflow triggers:
+# - Manually via "workflow_dispatch".
+on:
+  workflow_dispatch:
+
+
+jobs:
+  deploy:
+    name: "PUSH FULL MART DEPLOY"
+
+    # The job will run on a self-hosted runner with the label [ 'self-hosted', 'shared-services-dev' ].
+    runs-on:
+
+    steps:
+      # Step 1: Check out the repository code so the workflow has access to it.
+      - uses: actions/checkout@v3
+
+      # Step 2: Set up the Databricks CLI to interact with Databricks environments.
+      - uses: databricks/setup-cli@main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install pipx
+        run: |
+          make install-pipx
+
+      - name: Install dependencies
+        run: |
+          make dependencies-cicd
+
+      - name: Deploy Mart Full Deployment DAB in prod environment
+        if: ${{ github.ref == 'refs/heads/main_v2' }}
+        run: |
+          # Create Mart Full Deployment DAB in prod environment
+          python delta/test.py --first_number 5 --second_number 10
+          
+          # Change directory to delta/dab
+          cd delta/dab
+          
+          # Validate Mart Full Deployment DAB in prod environment
+          python test.py --first_number 10 --second_number 20
+        env:
+          ENVIRONMENT: prod # Set the environment to dev.
